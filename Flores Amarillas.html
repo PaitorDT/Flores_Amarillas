@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flores Amarillas 🌻</title>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to bottom, #fff9e6, #fff);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      margin: 0;
+      position: relative;
+    }
+    .card {
+      background: white;
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      padding: 20px;
+      text-align: center;
+      max-width: 400px;
+    }
+    svg {
+      width: 200px;
+      height: 200px;
+      display: block;
+      margin: auto;
+    }
+    #giftButton {
+      background: #fff8e1;
+      border: 2px solid #facc15;
+      border-radius: 12px;
+      padding: 15px 25px;
+      font-size: 1.1rem;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+      opacity: 0;
+      transform: scale(0.8);
+      transition: opacity 1s ease, transform 0.5s ease;
+      animation: heartbeat 1.5s infinite;
+    }
+    #giftButton.show {
+      opacity: 1;
+      transform: scale(1);
+    }
+    @keyframes heartbeat {
+      0% { transform: scale(1); }
+      30% { transform: scale(1.1); }
+      60% { transform: scale(1); }
+    }
+    #giftButton.opening {
+      animation: openLetter 0.6s forwards;
+    }
+    @keyframes openLetter {
+      0% { transform: rotateX(0deg) scale(1); }
+      50% { transform: rotateX(90deg) scale(1.1); opacity: 0.7; }
+      100% { transform: rotateX(180deg) scale(0); opacity: 0; }
+    }
+    #recipient {
+      display: none;
+      font-style: italic;
+      font-weight: bold;
+      color: #c71585;
+      margin-top: 10px;
+    }
+    #message {
+      margin-top: 15px;
+      color: #a16207;
+      font-weight: 500;
+      display: none;
+      white-space: pre-line;
+    }
+    #musicControl {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: #fff8e1;
+      border: 2px solid #facc15;
+      border-radius: 50%;
+      padding: 10px;
+      cursor: pointer;
+      box-shadow: 0px 3px 6px rgba(0, 0, 0, 0.1);
+      font-size: 1.2rem;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <button id="musicControl">🔊</button>
+
+  <div class="card">
+    <h2>Flores Amarillas 🌼</h2>
+    <svg viewBox="0 0 200 200">
+      <rect x="96" y="110" width="8" height="70" rx="4" fill="#3b7a3b"></rect>
+      <path d="M100 140 C70 130, 60 120, 70 110 C80 100, 95 115, 100 140" fill="#2f6b2f"></path>
+      <path d="M104 140 C134 130, 144 120, 134 110 C124 100, 109 115, 104 140" fill="#2f6b2f"></path>
+      <g id="flowers"></g>
+    </svg>
+
+    <button id="giftButton">💌 Abrir tu regalo</button>
+
+    <!-- Destinatario -->
+    <p id="recipient"></p>
+
+    <!-- Mensaje -->
+    <p id="message"></p>
+  </div>
+
+  <script>
+    const flowers = document.getElementById('flowers');
+    const messageEl = document.getElementById('message');
+    const giftButton = document.getElementById('giftButton');
+    const musicControl = document.getElementById('musicControl');
+    const recipientEl = document.getElementById("recipient");
+
+    // Música
+    const music = new Audio("https://cdn.pixabay.com/download/audio/2022/03/10/audio_4b2f004bb5.mp3?filename=fairy-tale-112194.mp3");
+    music.loop = true;
+    music.volume = 0.6;
+
+    setTimeout(() => giftButton.classList.add("show"), 1500);
+
+    function createFlower(cx, cy) {
+      const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+      group.setAttribute('transform', `translate(${cx},${cy})`);
+      group.style.opacity = 0;
+      for (let p = 0; p < 8; p++) {
+        const angle = (p / 8) * Math.PI * 2;
+        const px = Math.cos(angle) * 14;
+        const py = Math.sin(angle) * 10;
+        const petal = document.createElementNS('http://www.w3.org/2000/svg', 'ellipse');
+        petal.setAttribute('cx', px);
+        petal.setAttribute('cy', py);
+        petal.setAttribute('rx', '10');
+        petal.setAttribute('ry', '6');
+        petal.setAttribute('fill', '#FFD54A');
+        group.appendChild(petal);
+      }
+      const center = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      center.setAttribute('r', '6');
+      center.setAttribute('fill', '#6b3b1b');
+      group.appendChild(center);
+      return group;
+    }
+
+    function sendFlowers() {
+      giftButton.classList.add("opening");
+      setTimeout(() => {
+        giftButton.style.display = "none";
+        flowers.innerHTML = '';
+        const positions = [[40,70],[100,50],[160,70]];
+
+        music.play().catch(err => console.log("El navegador bloqueó la música:", err));
+        musicControl.style.display = "block";
+
+        positions.forEach(([x,y], i) => {
+          const flower = createFlower(x, y);
+          flowers.appendChild(flower);
+          setTimeout(() => {
+            flower.style.transition = "opacity 0.6s ease";
+            flower.style.opacity = 1;
+          }, i * 600);
+        });
+
+        confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+
+        // Mostrar destinatario
+        recipientEl.textContent = "Para: Jhamir";
+        recipientEl.style.display = "block";
+
+        const text = "Feliz inicio de primavera mi estimado, no te rindas ante las dificultades, mantente determinado y recuerda que te queremos mucho💖🌻";
+        messageEl.textContent = "";
+        messageEl.style.display = "block";
+
+        let i = 0;
+        let typing = setInterval(() => {
+          if (i < text.length) {
+            messageEl.textContent += text[i];
+            i++;
+          } else {
+            clearInterval(typing);
+          }
+        }, 40);
+      }, 600);
+    }
+
+    musicControl.addEventListener("click", () => {
+      if (music.paused) {
+        music.play();
+        musicControl.textContent = "🔊";
+      } else {
+        music.pause();
+        musicControl.textContent = "🔇";
+      }
+    });
+
+    giftButton.addEventListener("click", sendFlowers);
+  </script>
+</body>
+</html>
